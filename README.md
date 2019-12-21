@@ -1,23 +1,18 @@
 # MultiBootUsb
 
-Few scripts, allowing to make multiboot usb stick, and easly append new ISOs to bootloader.
+GUI application for quickly adding boot entries on MultiBoot USB devices
 
 # Disclaimer
-Scripts where written under RHEL7, minor changes may be needed to run this script under Debian or other distros.
+Entries where written for RHEL/CentOs, minor changes may be needed to run properly under Debian or other distros.
 
 # Usage
-## 1.Make USB device a multiboot device
-Plug USB device and run initialization script on appropriate SCSI device  
-`sudo ./init_multiboot_usb.sh /dev/sdX` where `X` stands for your device letter.
+1. Select desired removable drive from the list
+2. Click 'Add boot entries' button
+3. Follow popup windows to finish the process
 
-## 2.Copy ISO file to your formated device
-> Initialization unmounts your drive so start with mounting second partition `mount /dev/sdX2 /mnt`  
-
-copy iso with `cp example.iso /mnt/boot/iso/`
-
-## 3.Append new entry to grub on you multiboot USB
-`sudo ./append_rhel_grub_entry.sh /mnt/boot/iso/example.iso /mnt/boot/grub2/grub.cfg`
-> Append does not unmount USB drive
+## [Dependencies](requirements.txt)
+- [psutil](https://pypi.org/project/psutil/)
+- [PySimpleGUI](https://pypi.org/project/PySimpleGUI/)
 
 ## License
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details

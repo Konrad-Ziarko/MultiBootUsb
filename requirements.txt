@@ -1,0 +1,4 @@
+pycdlib>=1.9.0
+PySimpleGUI>=4.13.1
+psutil>=5.6.7
+
