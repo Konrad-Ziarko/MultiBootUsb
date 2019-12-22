@@ -5,7 +5,7 @@ import pycdlib
 
 
 def list_iso_files(base_path):
-    for dirpath, dirnames, filenames in os.walk(base_path):
+    for dirpath, _, filenames in os.walk(base_path):
         for filename in (f for f in filenames if f.endswith(".iso")):
             new_dir = dirpath.replace(base_path, '')
             path = os.path.join(new_dir, filename).replace('\\', '/')
