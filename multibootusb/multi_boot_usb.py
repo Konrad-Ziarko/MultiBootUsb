@@ -54,17 +54,23 @@ class Gui(object):
                 drives = list_drives(values['-only_removable-'])
                 self.window['-drives-'].update(drives)
             elif event == WindowStrings.BootEntries:
-                if sg.popup_yes_no('About to add boot entries.', 'Are you sure ISO files are stored in /isos folder on selected drive?', keep_on_top=True, icon=self.icon) == 'Yes':
+                if sg.popup_yes_no('About to add boot entries.', 'Are you sure ISO files are stored in /isos folder on selected drive?',
+                                   keep_on_top=True,
+                                   icon=self.icon) == 'Yes':
                     drives = values['-drives-']
                     for drive in drives:
                         if drive.fs_type != 'FAT32':
-                            if sg.popup_yes_no(F'Non FAT32 drives (as {drive.mount_point}) may not work as multi boot device. Continue?', keep_on_top=True, icon=self.icon) == 'No':
+                            if sg.popup_yes_no(F'Non FAT32 drives (as {drive.mount_point}) may not work as multi boot device. Continue?',
+                                               keep_on_top=True,
+                                               icon=self.icon) == 'No':
                                 break
                         isos_path = os.path.join(drive.mount_point, 'isos')
                         efi_path = os.path.join(drive.mount_point, 'EFI')
                         if os.path.exists(isos_path):
                             if not os.path.exists(efi_path):
-                                if sg.popup_yes_no(F'There is no /EFI dir on the device {drive.mount_point}, extract default one?', keep_on_top=True, icon=self.icon) == 'Yes':
+                                if sg.popup_yes_no(F'There is no /EFI dir on the device {drive.mount_point}, extract default one?',
+                                                   keep_on_top=True,
+                                                   icon=self.icon) == 'Yes':
                                     extract_basic_efi_directory(get_resource_path(os.path.join('data', 'EFI.zip')), efi_path)
                                 else:
                                     sg.popup(F'Adding boot entries aborted!', keep_on_top=True, icon=self.icon)

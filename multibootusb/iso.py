@@ -1,19 +1,14 @@
 import os
 import shutil
 
-try:
-    from cStringIO import StringIO as BytesIO
-except ImportError:
-    from io import BytesIO
-
 import pycdlib
 
 
 def list_iso_files(base_path):
     for dirpath, dirnames, filenames in os.walk(base_path):
         for filename in (f for f in filenames if f.endswith(".iso")):
-            dir = dirpath.replace(base_path, '')
-            path = os.path.join(dir, filename).replace('\\', '/')
+            new_dir = dirpath.replace(base_path, '')
+            path = os.path.join(new_dir, filename).replace('\\', '/')
             if path.startswith('/'):
                 path = path[1:]
             label = get_iso_label(os.path.join(dirpath, filename))
