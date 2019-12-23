@@ -1,11 +1,17 @@
 import os
+import sys
 from os.path import sep
 import PySimpleGUI as sg
 
 from multibootusb.grub import init_base_grub, add_rhel_menu_entry
 from multibootusb.iso import extract_basic_efi_directory, list_iso_files
-from multibootusb.drive import list_drives
+from multibootusb.drive import list_drives, FsTypes
 from multibootusb.misc import get_resource_path
+
+if sys.platform == 'linux':
+    pass
+elif sys.platform == 'win32':
+    from multibootusb.drive import win_format_drive as format_drive
 
 
 class WindowStrings:
@@ -22,13 +28,17 @@ class Gui(object):
         sg.change_look_and_feel('DarkAmber')
 
         self.icon = get_resource_path(F'icons{sep}favicon.ico')
+        self.progress_bar_format = sg.ProgressBar(10, orientation='h', size=(20, 20), key='progress')
         self.layout = [[sg.Text(WindowStrings.WindowTitle, size=(45, 1), font=('Helvetica', 15))],
                        [sg.Text('{:5} {:>9} {:>9}'.format('Drive', 'Total', 'Used'), font=('Courier', 12)),
                         sg.Checkbox('Only removable', default=True, key='-only_removable-'),
                         sg.Button(WindowStrings.RefreshDrives)],
                        [sg.Listbox(values=[' '], size=(50, 10), select_mode=sg.SELECT_MODE_SINGLE, font=('Courier', 12), key='-drives-')],
-                       [sg.Button(WindowStrings.BootEntries, button_color=('white', 'DarkOrange2')),
+                       [sg.Combo(values=[e.value for e in FsTypes], default_value=FsTypes.FAT32.value, size=(8, 1), key='-fs_type-'),
                         sg.Button(WindowStrings.FormatDrive, button_color=('white', 'red'), bind_return_key=True),
+                        self.progress_bar_format],
+                       [],
+                       [sg.Button(WindowStrings.BootEntries, button_color=('white', 'DarkOrange2')),
                         sg.Exit(button_color=('white', 'sea green'))]]
 
     def start(self):
@@ -84,6 +94,19 @@ class Gui(object):
                         else:
                             sg.popup(F'No "isos" dir on {drive.mount_point}', title='Error', keep_on_top=True, icon=self.icon)
             elif event == WindowStrings.FormatDrive:
-                pass
+                drives = values['-drives-']
+                for drive in drives:
+                    if sg.popup_yes_no(F"You are about to clear out the {drive.device} drive. All your data WILL BE GONE.\nDo you want to continue with {values['-fs_type-']}?",
+                                       title='Caution',
+                                       keep_on_top=True,
+                                       icon=self.icon) == 'Yes':
+                        success, ret_code = format_drive(drive.device, values['-fs_type-'],
+                                                         only_removable=values['-only_removable-'],
+                                                         progress_bar=self.progress_bar_format)
+                        if success is True:
+                            sg.popup('Drive formatted.', title='Success')
+                        else:
+                            sg.popup(F'Error 0x{ret_code:08X}.\nThere were some problems while formatting the drive!', title='Error')
+                        self.progress_bar_format.update_bar(0, 0)
 
         self.window.close()
