@@ -29,28 +29,32 @@ class Gui(object):
 
         self.icon = get_resource_path(F'icons{sep}favicon.ico')
         self.progress_bar_format = sg.ProgressBar(10, orientation='h', size=(20, 20), key='progress')
-        self.layout = [[sg.Text(WindowStrings.WindowTitle, size=(45, 1), font=('Helvetica', 15))],
-                       [sg.Text('{:5} {:>9} {:>9}'.format('Drive', 'Total', 'Used'), font=('Courier', 12)),
-                        sg.Checkbox('Only removable', default=True, key='-only_removable-'),
-                        sg.Button(WindowStrings.RefreshDrives)],
-                       [sg.Listbox(values=[' '], size=(50, 10), select_mode=sg.SELECT_MODE_SINGLE, font=('Courier', 12), key='-drives-')],
-                       [sg.Combo(values=[e.value for e in FsTypes], default_value=FsTypes.FAT32.value, size=(8, 1), key='-fs_type-'),
-                        sg.Button(WindowStrings.FormatDrive, button_color=('white', 'red'), bind_return_key=True),
-                        self.progress_bar_format],
-                       [],
-                       [sg.Button(WindowStrings.BootEntries, button_color=('white', 'DarkOrange2')),
-                        sg.Exit(button_color=('white', 'sea green'))]]
+        self.list_of_drives = sg.Listbox(values=[' '], size=(55, 10), select_mode=sg.SELECT_MODE_SINGLE, no_scrollbar=True,
+                                         font=('Courier', 12), right_click_menu=['&Edit', ['Paste', ['Special', 'Normal', ], 'Undo'], ],
+                                         key='-drives-')
+        self.layout = [
+            [sg.Text(WindowStrings.WindowTitle, size=(45, 1), font=('Helvetica', 15))],
+            [sg.Text('{:5} {:>7} {:>15}  '.format('Drive', 'Total', 'Used'), font=('Courier', 12)),
+             sg.Checkbox('Only removable', default=True, key='-only_removable-'),
+             sg.Button(WindowStrings.RefreshDrives)],
+            [self.list_of_drives],
+            [sg.Combo(values=[e.value for e in FsTypes], default_value=FsTypes.FAT32.value, size=(8, 1), key='-fs_type-'),
+             sg.Button(WindowStrings.FormatDrive, button_color=('white', 'red'), bind_return_key=True),
+             self.progress_bar_format],
+            [],
+            [sg.Button(WindowStrings.BootEntries, button_color=('white', 'DarkOrange2')),
+             sg.Exit(button_color=('white', 'sea green'))]]
 
     def start(self):
         self.window = sg.Window(WindowStrings.WindowTitleShort, self.layout,
                                 keep_on_top=False,
-                                auto_size_buttons=False,
+                                auto_size_buttons=True,
                                 default_button_element_size=(12, 1),
                                 return_keyboard_events=True,
                                 finalize=True,
-                                icon=self.icon)
-        drives = list_drives()
-        self.window['-drives-'].update(drives)
+                                icon=self.icon,
+                                )
+        self.window['-drives-'].update(list_drives())
 
         while True:
             event, values = self.window.read()

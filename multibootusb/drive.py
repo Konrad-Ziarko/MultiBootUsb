@@ -4,7 +4,7 @@ from enum import Enum
 from psutil import disk_partitions, disk_usage
 from typing import List
 
-from multibootusb.misc import ProgressBarProgress, DummyProgressBar
+from multibootusb.misc import ProgressBarProgress, DummyProgressBar, bytes2human
 
 GB = 2 ** 30
 
@@ -17,13 +17,16 @@ class MBUDrive(object):
         self.opts = psutil_drive.opts
         self.mount_point = psutil_drive.mountpoint
 
-        self.size_total = disk_usage(self.device).total
-        self.size_used = disk_usage(self.device).used
-        self.size_free = disk_usage(self.device).free
-        self.size_percent = disk_usage(self.device).percent
+        self.size_total = disk_usage(self.mount_point).total
+        self.size_used = disk_usage(self.mount_point).used
+        self.size_free = disk_usage(self.mount_point).free
+        self.size_percent = disk_usage(self.mount_point).percent
 
     def __str__(self):
-        return F'{self.device:5} {self.size_total / GB:9.3f} {self.size_used / GB:9.3f}'
+        device = self.device
+        if device.startswith('/dev/'):
+            device = device.replace('/dev/', '')
+        return F'{device:5} {bytes2human(self.size_total):>7} {bytes2human(self.size_used):>9}({self.size_percent:4}%)  {self.fs_type:6} [{self.mount_point}]'
 
 
 def list_drives(only_removable: bool = True) -> List[MBUDrive]:
