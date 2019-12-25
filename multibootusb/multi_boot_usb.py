@@ -30,8 +30,7 @@ class Gui(object):
         self.icon = get_resource_path(F'icons{sep}favicon.ico')
         self.progress_bar_format = sg.ProgressBar(10, orientation='h', size=(20, 20), key='progress')
         self.list_of_drives = sg.Listbox(values=[' '], size=(55, 10), select_mode=sg.SELECT_MODE_SINGLE, no_scrollbar=True,
-                                         font=('Courier', 12), right_click_menu=['&Edit', ['Paste', ['Special', 'Normal', ], 'Undo'], ],
-                                         key='-drives-')
+                                         font=('Courier', 12), key='-drives-')
         self.layout = [
             [sg.Text(WindowStrings.WindowTitle, size=(45, 1), font=('Helvetica', 15))],
             [sg.Text('{:5} {:>7} {:>15}  '.format('Drive', 'Total', 'Used'), font=('Courier', 12)),

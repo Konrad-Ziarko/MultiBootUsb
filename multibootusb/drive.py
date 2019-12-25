@@ -83,7 +83,7 @@ class FsTypes(Enum):
 class FMIFS:
     UNKNOWN = 0x00
     REMOVABLE = 0x0B
-    HARDDISK = 0x0C
+    HARD_DISK = 0x0C
 
 
 def win_format_drive(windows_drive_letter: str, fs_type: str = FsTypes.FAT32.value, drive_label: str = '', only_removable=True, progress_bar=DummyProgressBar()):
