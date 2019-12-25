@@ -3,7 +3,7 @@ import sys
 from os.path import sep
 import PySimpleGUI as sg
 
-from multibootusb.grub import init_base_grub, add_rhel_menu_entry
+from multibootusb.grub import init_base_grub, add_grub_menu_entry
 from multibootusb.iso import extract_basic_efi_directory, list_iso_files
 from multibootusb.drive import list_drives, FsTypes
 from multibootusb.misc import get_resource_path
@@ -80,6 +80,7 @@ class Gui(object):
                                 break
                         isos_path = os.path.join(drive.mount_point, 'isos')
                         efi_path = os.path.join(drive.mount_point, 'EFI')
+                        usb_label = drive.get_drive_label()
                         if os.path.exists(isos_path):
                             if not os.path.exists(efi_path):
                                 if sg.popup_yes_no(F'There is no /EFI dir on the device {drive.mount_point}, extract default one?',
@@ -89,12 +90,20 @@ class Gui(object):
                                 else:
                                     sg.popup(F'Adding boot entries aborted!', keep_on_top=True, icon=self.icon)
                                     break
-                            else:
-                                grub_path = os.path.join(efi_path, 'BOOT', 'grub.cfg')
-                                init_base_grub(grub_path)
-                                for iso_file, iso_label in list_iso_files(isos_path):
-                                    if 'centos' in iso_file.lower():
-                                        add_rhel_menu_entry(grub_path, iso_label, iso_file)
+                            grub_path = os.path.join(efi_path, 'BOOT', 'grub.cfg')
+                            init_base_grub(grub_path)
+                            added_entries = []
+                            for iso_file, iso_label in list_iso_files(isos_path):
+                                entry_added = add_grub_menu_entry(iso_file, iso_label, grub_path, usb_label)
+                                if entry_added is False:
+                                    pass  # TODO allow to add entry manually
+                                else:
+                                    added_entries.append(F"[{iso_label}]{iso_file}")
+                            self.window.disable()
+                            sg.popup("{} ".format('\n'.join(added_entries)), title='Entries added', icon=self.icon)
+                            self.window.enable()
+                            self.window.hide()
+                            self.window.un_hide()
                         else:
                             sg.popup(F'No "isos" dir on {drive.mount_point}', title='Error', keep_on_top=True, icon=self.icon)
             elif event == WindowStrings.FormatDrive:

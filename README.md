@@ -16,7 +16,7 @@ Entries were written for RHEL/CentOs, minor changes may be needed to run properl
 2. Click 'Add boot entries' button
 3. Follow popup windows to finish the process
 
-![alt text](screen1.png)
+![alt text](docs/images/screen1.png)
 
 
 # What is required?

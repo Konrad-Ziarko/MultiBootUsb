@@ -1,12 +1,37 @@
 import io
+import sys
 from enum import Enum
+from typing import List
 
 from psutil import disk_partitions, disk_usage
-from typing import List
 
 from multibootusb.misc import ProgressBarProgress, DummyProgressBar, bytes2human
 
 GB = 2 ** 30
+
+if sys.platform == 'linux':
+    pass
+elif sys.platform == 'win32':
+    def _drive_label(device_path):
+        from ctypes import windll, create_unicode_buffer, c_wchar_p, sizeof
+        kernel32 = windll.kernel32
+        volume_name_buffer = create_unicode_buffer(1024)
+        file_system_name_buffer = create_unicode_buffer(1024)
+        serial_number = None
+        max_component_length = None
+        file_system_flags = None
+
+        rc = kernel32.GetVolumeInformationW(
+            c_wchar_p(device_path),
+            volume_name_buffer,
+            sizeof(volume_name_buffer),
+            serial_number,
+            max_component_length,
+            file_system_flags,
+            file_system_name_buffer,
+            sizeof(file_system_name_buffer)
+        )
+        return volume_name_buffer.value
 
 
 class MBUDrive(object):
@@ -27,6 +52,9 @@ class MBUDrive(object):
         if device.startswith('/dev/'):
             device = device.replace('/dev/', '')
         return F'{device:5} {bytes2human(self.size_total):>7} {bytes2human(self.size_used):>9}({self.size_percent:4}%)  {self.fs_type:6} [{self.mount_point}]'
+
+    def get_drive_label(self):
+        return _drive_label(self.device)
 
 
 def list_drives(only_removable: bool = True) -> List[MBUDrive]:
@@ -77,7 +105,7 @@ def win_format_drive(windows_drive_letter: str, fs_type: str = FsTypes.FAT32.val
     if only_removable is True:
         device_type = FMIFS.REMOVABLE
 
-    ret_code = fm.FormatEx(c_wchar_p(windows_drive_letter), device_type, c_wchar_p(fs_type),  # replace FMIFS.REMOVABLE with UNKNOWN to allow to format any type of drive
+    ret_code = fm.FormatEx(c_wchar_p(windows_drive_letter), device_type, c_wchar_p(fs_type),
                            c_wchar_p(drive_label), True, c_int(0), fmt_cb_func(my_fmt_callback))
     progress_bar.update_bar(5, 5)
-    return ret_code == 0x70CC128C, ret_code
+    return ret_code == 0x6774128C, ret_code
