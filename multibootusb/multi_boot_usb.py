@@ -1,5 +1,6 @@
 import os
 import sys
+from enum import Enum
 from os.path import sep
 import PySimpleGUI as sg
 
@@ -22,22 +23,29 @@ class WindowStrings:
     FormatDrive = 'Format Drive'
 
 
+class GuiKeys(Enum):
+    FS_TYPE = '-fs_type-'
+    ONLY_REMOVABLE = '-only_removable-'
+    DRIVES = '-drives-'
+    PROGRESS = '-progress-'
+
+
 class Gui(object):
     def __init__(self):
         self.window = None
         sg.change_look_and_feel('DarkAmber')
 
         self.icon = get_resource_path(F'icons{sep}favicon.ico')
-        self.progress_bar_format = sg.ProgressBar(10, orientation='h', size=(20, 20), key='progress')
+        self.progress_bar_format = sg.ProgressBar(10, orientation='h', size=(20, 20), key=GuiKeys.PROGRESS)
         self.list_of_drives = sg.Listbox(values=[' '], size=(55, 10), select_mode=sg.SELECT_MODE_SINGLE, no_scrollbar=True,
-                                         font=('Courier', 12), key='-drives-')
+                                         font=('Courier', 12), key=GuiKeys.DRIVES)
         self.layout = [
             [sg.Text(WindowStrings.WindowTitle, size=(45, 1), font=('Helvetica', 15))],
             [sg.Text('{:5} {:>7} {:>15}  '.format('Drive', 'Total', 'Used'), font=('Courier', 12)),
-             sg.Checkbox('Only removable', default=True, key='-only_removable-'),
+             sg.Checkbox('Only removable', default=True, key=GuiKeys.ONLY_REMOVABLE),
              sg.Button(WindowStrings.RefreshDrives)],
             [self.list_of_drives],
-            [sg.Combo(values=[e.value for e in FsTypes], default_value=FsTypes.FAT32.value, size=(8, 1), key='-fs_type-'),
+            [sg.Combo(values=[e.value for e in FsTypes], default_value=FsTypes.FAT32.value, size=(8, 1), key=GuiKeys.FS_TYPE),
              sg.Button(WindowStrings.FormatDrive, button_color=('white', 'red'), bind_return_key=True),
              self.progress_bar_format],
             [],
@@ -53,7 +61,7 @@ class Gui(object):
                                 finalize=True,
                                 icon=self.icon,
                                 )
-        self.window['-drives-'].update(list_drives())
+        self.window[GuiKeys.DRIVES].update(list_drives())
 
         while True:
             event, values = self.window.read()
@@ -64,13 +72,13 @@ class Gui(object):
                 continue
 
             if event == WindowStrings.RefreshDrives:
-                drives = list_drives(values['-only_removable-'])
-                self.window['-drives-'].update(drives)
+                drives = list_drives(values[GuiKeys.ONLY_REMOVABLE])
+                self.window[GuiKeys.DRIVES].update(drives)
             elif event == WindowStrings.BootEntries:
                 if sg.popup_yes_no('About to add boot entries.', 'Are you sure ISO files are stored in /isos folder on selected drive?',
                                    keep_on_top=True,
                                    icon=self.icon) == 'Yes':
-                    drives = values['-drives-']
+                    drives = values[GuiKeys.DRIVES]
                     for drive in drives:
                         if drive.fs_type != 'FAT32':
                             if sg.popup_yes_no(F'Non FAT32 drives (as {drive.mount_point}) may not work as multi boot device. Continue?',
@@ -106,14 +114,14 @@ class Gui(object):
                         else:
                             sg.popup(F'No "isos" dir on {drive.mount_point}', title='Error', keep_on_top=True, icon=self.icon)
             elif event == WindowStrings.FormatDrive:
-                drives = values['-drives-']
+                drives = values[GuiKeys.DRIVES]
                 for drive in drives:
-                    if sg.popup_yes_no(F"You are about to clear out the {drive.device} drive. All your data WILL BE GONE.\nDo you want to continue with {values['-fs_type-']}?",
+                    if sg.popup_yes_no(F"You are about to clear out the {drive.device} drive. All your data WILL BE GONE.\nDo you want to continue with {values[GuiKeys.FS_TYPE]}?",
                                        title='Caution',
                                        keep_on_top=True,
                                        icon=self.icon) == 'Yes':
-                        success, ret_code = format_drive(drive.device, values['-fs_type-'],
-                                                         only_removable=values['-only_removable-'],
+                        success, ret_code = format_drive(drive.device, values[GuiKeys.FS_TYPE],
+                                                         only_removable=values[GuiKeys.ONLY_REMOVABLE],
                                                          progress_bar=self.progress_bar_format)
                         if success is True:
                             sg.popup('Drive formatted.', title='Success')
