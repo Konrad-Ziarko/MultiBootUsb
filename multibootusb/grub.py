@@ -116,7 +116,7 @@ def _add_debian_menu_entry(grub_path: str, iso_label: str, entry_iso_path: str, 
 def _add_archlinux_menu_entry(grub_path: str, iso_label: str, entry_iso_path: str, usb_label: str):
     escaped_iso_label = iso_label.replace(' ', r'\x20')
     escaped_entry_iso_path = entry_iso_path.replace(' ', r'\x20')
-    with open(grub_path, 'a') as grub_file:  # FIXME
+    with open(grub_path, 'a') as grub_file:
         grub_file.write(f'menuentry \'{iso_label}\' {{\n'
                         f'\tset isofile="/isos/{escaped_entry_iso_path}"\n'
                         '\texport isofile\n'
