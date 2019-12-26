@@ -6,23 +6,31 @@
 GUI application for quickly adding boot entries on MultiBoot USB devices
 
 # Disclaimer
-Entries were written for RHEL/CentOs, minor changes may be needed to run properly under Debian or other distros.
+Grub entries were written for:
+- RHEL 
+- CentOs  
+- Ubuntu  
+- Debian live  
+- SystemRescueCD  
+- ~~ArchLinux~~ # Ends up in tty mode
 
 ## Build from source
 *Run [script](installer/installer.py) stored in installer folder*
 
 # Usage
-1. Select desired removable drive from the list
-2. Click 'Add boot entries' button
-3. Follow popup windows to finish the process
+1. Place .iso files in /isos directory on the drive
+2. Select desired removable drive from the list
+3. Click 'Add boot entries' button
+4. Follow popup windows to finish the process
 
-![alt text](docs/images/screen1.png)
+![Main window](docs/images/screen1.png)
 
 
 # What is required?
 Python 3.5 or greater.
 
 ## [Dependencies](requirements.txt)
+- [pycdlib](https://pypi.org/project/pycdlib/)
 - [psutil](https://pypi.org/project/psutil/)
 - [PySimpleGUI](https://pypi.org/project/PySimpleGUI/)
 
